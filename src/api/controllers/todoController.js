@@ -61,7 +61,7 @@ class TodoController {
             if(!taskGroup) {
                 throw {
                     name: 'DataNotFound',
-                    message: `Task not found!`,
+                    message: `Task Group ${groupId} not found!`,
                 };
             } else {
                 const { description } = req.body;
@@ -71,7 +71,7 @@ class TodoController {
                     description, TaskGroupId: taskGroup.id
                 })
                 .then(result => {
-                    let response = {name:"CreateTodo", message: "Todo Successfully Created!", data: result};
+                    let response = {name:"TaskCreate", message: "Task was created Successfully!", data: result};
                     res.status(200).json(response);
                 })
                 .catch(err => {
@@ -96,6 +96,58 @@ class TodoController {
             } else {
                 res.status(500).json(err);
             }
+        }
+    }
+
+    static async updateTask(req, res) {
+        try {
+            let groupId = req.params.groupId;
+
+            const taskGroup = await TaskGroup.findOne({
+                where: {
+                    uuid: groupId
+                },
+            });
+
+            if(!taskGroup) {
+                throw {
+                    name: 'DataNotFound',
+                    message: `Task Group ${groupId} not found!`,
+                };
+            } else {
+                let { description, completed } = req.body;
+                let usr = res.locals.user;
+                let uuid = req.params.id;
+
+                let completedAt = null;
+
+                if(completed) {
+                    completedAt = new Date();
+                }
+
+                Task.update({description, completed, completedAt}, {
+                    where: {
+                        uuid: uuid,
+                        TaskGroupId: taskGroup.id
+                    },
+                    returning: true,
+                    plain: true,
+                })
+                    .then(result => {
+                        const response = { name:"TaskUpdate", message: "Task was updated Successfully!", data: result[1].dataValues };
+                        res.status(200).json(response);
+                    })
+                    .catch(err => {
+                        res.status(500).json({
+                            message: err.message || "Some error occurred while retrieving data.",
+                        })
+                    })
+            }
+
+        } catch(err) {
+            res.status(500).json({
+                message: err.message || "Some error occurred while retrieving data.",
+              });
         }
     }
 
@@ -183,7 +235,7 @@ class TodoController {
             title, UserId: usr.id
         })
         .then(result => {
-            let response = {name:"CreateTodoGroup", message: "Todo Group Successfully Created!", data: result};
+            let response = {name:"TaskGroupCreate", message: "Task Group Successfully Created!", data: result};
             res.status(200).json(response);
         })
         .catch(err => {
@@ -192,12 +244,48 @@ class TodoController {
                 err.errors.forEach((error) => {
                     messages[error.path] = error.message;
                 });
-                res.status(500).json({name:"ErrorCreateTodoGroup", messages: messages || "Some error occurred while retrieving data."});
+                res.status(500).json({name:"ErrorCreateTaskGroup", messages: messages || "Some error occurred while retrieving data."});
             } else {
                 res.status(500).json(err);
             }
         })
 
+    }
+
+    static async updateTaskGroup(req,res) {
+        try {
+            let uuid = req.params.id;
+            let usr = res.locals.user;
+
+            TaskGroup.update(req.body, {
+                where: {
+                    uuid: uuid,
+                    UserId: usr.id
+                },
+                returning: true,
+                plain: true,
+                include: Task
+            })
+            .then(result => {
+                if(!result) {
+                    res.status(404).json({ name:"ErrorNotFound", statusCode:404, message: "Data Not Found" });
+                } else {
+                    let data =  result[1].dataValues;
+                    const response = { name:"TaskGroupUpdate", message: "Task Group was updated successfully!", data: data };
+                    res.status(200).json(response);
+                }
+                
+            })
+            .catch(err => {
+                res.status(500).json({
+                    message: err.message || "Some error occurred while retrieving data.",
+                })
+            })
+        } catch(err) {
+            res.status(500).json({
+                message: err.message || "Some error occurred while retrieving data.",
+              });
+        }
     }
 
     static async viewTaskGroup(req,res) {

@@ -29,10 +29,14 @@ This Application is made of two parts
       - [1. View all Task Groups](#1-view-all-task-groups)
       - [2. View Task Group By UUID](#2-view-task-group-by-uuid)
       - [3. Create Task Group](#3-create-task-group)
-      - [3. Delete Task Group by UUID](#3-delete-task-group-by-uuid)
+      - [4. Update Task Group By UUID](#4-update-task-group-by-uuid)
+      - [5. Delete Task Group by UUID](#5-delete-task-group-by-uuid)
     - [Todo](#todo)
       - [1. View All](#1-view-all)
       - [2. View By UUID](#2-view-by-uuid)
+      - [3. Create](#3-create)
+      - [4. Update By UUID](#4-update-by-uuid)
+      - [5. Delete By UUID](#5-delete-by-uuid)
   - [License](#license)
 
 ## How to
@@ -307,7 +311,38 @@ Response ``Status 200``
 }
 ```
 
-#### 3. Delete Task Group by UUID
+#### 4. Update Task Group By UUID
+
+Update Task Group
+
+``PUT http://localhost:3000/v1/api/todos/:id``
+
+``:id`` is uuid from table ``task_groups``
+
+Parameters Body
+
+| Parameter              | Value                    | Required   |
+| ---------------------- | ------------------------ | ---------- |
+| title                  | string                   | true       |
+
+Response ``Status 200``
+
+```json
+{
+    "name": "TaskGroupUpdate",
+    "message": "Task Group was updated Successfully!",
+    "data": {
+        "uuid": "string",
+        "id": number,
+        "title": "string",
+        "UserId": number,
+        "updatedAt": "date",
+        "createdAt": "date"
+    }
+}
+```
+
+#### 5. Delete Task Group by UUID
 
 Deleting task group by uuid with association task remove or delete
 
@@ -403,6 +438,79 @@ Response ``Status 200``
             "updatedAt": "date"
         }
     }
+}
+```
+
+#### 3. Create
+
+``POST http://localhost:3000/v1/api/todos``
+
+Parameters Body
+
+| Parameter                 | Value             | Required      |
+| ------------------------- | ----------------- | ------------- |
+| description               |                   | true          |
+
+Response ``Status 200``
+
+```json
+{
+    "name": "TaskCreate",
+    "message": "Task was created Successfully!",
+    "data": {
+        "uuid": "ffdd1993-12ce-4a50-888f-9b0e4ddbd028",
+        "id": 6,
+        "description": "Nangka muda",
+        "TaskGroupId": 3,
+        "updatedAt": "2023-01-13T06:40:02.890Z",
+        "createdAt": "2023-01-13T06:40:02.890Z",
+        "completed": false,
+        "completedAt": null
+    }
+}
+```
+
+#### 4. Update By UUID
+
+``PUT http://localhost:3000/v1/api/todos/:groupId/items/:id``
+
+* ``:groupId`` just take alook field ``uuid`` on table ``task_groups``
+
+* ``:id`` just take alook field ``uuid`` on table ``taks``
+
+Response ``Status 200``
+
+```json
+{
+    "name": "TaskUpdate",
+    "message": "Task was updated successfully!",
+    "data": {
+        "id": 2,
+        "uuid": "string",
+        "TaskGroupId": number,
+        "description": "string",
+        "completed": true,
+        "completedAt": "date | null",
+        "createdAt": "date",
+        "updatedAt": "date"
+    }
+}
+```
+
+#### 5. Delete By UUID
+
+``DELETE http://localhost:3000/v1/api/todos/:groupId/items/:id``
+
+* ``:groupId`` just take alook field ``uuid`` on table ``task_groups``
+
+* ``:id`` just take alook field ``uuid`` on table ``taks``
+
+Response ``Status 200``
+
+```json
+{
+    "name": "TaskDelete",
+    "message": "Task Successfully Deleted!"
 }
 ```
 
